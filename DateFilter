@@ -1,0 +1,29 @@
+public static List<String> getStringsBeforeDate(List<String> sortedStrings, String reference) {
+        List<String> result = new ArrayList<>();
+        LocalDate referenceDate;
+
+        try {
+            // Extract the date from the reference string
+            String referenceDateString = reference.substring(reference.lastIndexOf('~') + 1);
+            referenceDate = LocalDate.parse(referenceDateString, dateFormatter);
+        } catch (DateTimeParseException e) {
+            throw new IllegalArgumentException("Invalid date format in reference string", e);
+        }
+
+        // Iterate over the sorted list and collect all strings with earlier dates
+        for (String s : sortedStrings) {
+            try {
+                String dateString = s.substring(s.lastIndexOf('~') + 1);
+                LocalDate date = LocalDate.parse(dateString, dateFormatter);
+                
+                // Compare and add to the result if the date is earlier
+                if (date.isBefore(referenceDate)) {
+                    result.add(s);
+                }
+            } catch (DateTimeParseException e) {
+                throw new IllegalArgumentException("Invalid date format in list string", e);
+            }
+        }
+
+        return result;
+    }
