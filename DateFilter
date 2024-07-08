@@ -1,29 +1,23 @@
-public static List<String> getStringsBeforeDate(List<String> sortedStrings, String reference) {
-        List<String> result = new ArrayList<>();
-        LocalDate referenceDate;
+public static void sortStringsByDate(List<String> strings) {
+        Collections.sort(strings, new Comparator<String>() {
+            private final DateTimeFormatter dateFormatter = DateTimeFormatter.ofPattern("yyyy-MM-dd");
+            private final Splitter splitter = Splitter.on('~').omitEmptyStrings().trimResults();
 
-        try {
-            // Extract the date from the reference string
-            String referenceDateString = reference.substring(reference.lastIndexOf('~') + 1);
-            referenceDate = LocalDate.parse(referenceDateString, dateFormatter);
-        } catch (DateTimeParseException e) {
-            throw new IllegalArgumentException("Invalid date format in reference string", e);
-        }
-
-        // Iterate over the sorted list and collect all strings with earlier dates
-        for (String s : sortedStrings) {
-            try {
-                String dateString = s.substring(s.lastIndexOf('~') + 1);
-                LocalDate date = LocalDate.parse(dateString, dateFormatter);
-                
-                // Compare and add to the result if the date is earlier
-                if (date.isBefore(referenceDate)) {
-                    result.add(s);
-                }
-            } catch (DateTimeParseException e) {
-                throw new IllegalArgumentException("Invalid date format in list string", e);
+            @Override
+            public int compare(String o1, String o2) {
+                LocalDate date1 = extractDate(o1);
+                LocalDate date2 = extractDate(o2);
+                return date2.compareTo(date1); // For descending order
             }
-        }
 
-        return result;
+            private LocalDate extractDate(String str) {
+                List<String> parts = splitter.splitToList(str);
+                if (parts.size() < 2) {
+                    throw new IllegalArgumentException("String does not contain enough parts to extract a date");
+                }
+                String dateString = parts.get(parts.size() - 2); // Second last element
+                return LocalDate.parse(dateString, dateFormatter);
+            }
+        });
     }
+}
